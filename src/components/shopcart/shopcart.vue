@@ -319,13 +319,13 @@
         bottom 22px
         padding 8px
         z-index 200
-        transition all 1s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+        transition all .5s cubic-bezier(0.49, -0.29, 0.75, 0.41)
         .inner
           width 16px
           height 16px
           border-radius 50%
           background rgb(0, 160, 220)
-          transition all 1s linear
+          transition all .5s linear
     .cart-list
       position absolute
       width 100%

@@ -35,11 +35,31 @@
           <p class="info">{{food.info}}</p>
         </div>
         <!--分割线-->
-        <v-split v-show="food.info"></v-split>
-        <!--商品介绍-->
-        <div class="food-rating-wrapper" v-show="food.info">
+        <v-split></v-split>
+        <!--商品评论-->
+        <div class="food-rating-wrapper">
           <h1 class="title">商品评价</h1>
-          <p class="info">{{food.info}}</p>
+          <v-ratingselect :ratings="food.ratings" :selectType="selectType" :onlyContent="onlyContent"
+                          :desc="desc" @onlyContentToggle="onlyContentToggle"
+                          @ratingTypeChange="ratingTypeChange"></v-ratingselect>
+        </div>
+        <!--评论列表-->
+        <div class="rating-list">
+          <ul v-show="food.ratings&&food.ratings.length">
+            <li class="rating-item border-1px" v-for="(rating,index) in food.ratings" :key="index"
+                v-show="filterRating(rating.rateType,rating.text)">
+              <div class="user">
+                <span class="name">{{rating.username}}</span>
+                <img class="avatar" width="12" height="12" :src="rating.avatar">
+              </div>
+              <div class="time">{{rating.rateTime | formatDate}}</div>
+              <p class="text">
+                <span :class="{'icon-thumb_up':rating.rateType===0,'icon-thumb_down':rating.rateType===1}"></span>
+                <span>{{rating.text}}</span>
+              </p>
+            </li>
+          </ul>
+          <div class="no-ratings" v-show="!food.ratings||!food.ratings.length">暂无评价</div>
         </div>
       </div>
     </div>
@@ -51,11 +71,18 @@
   import BScroll from 'better-scroll';
   import cartcontrol from 'components/cartcontrol/cartcontrol';
   import split from 'components/tools/split';
+  import ratingselect from 'components/ratingselect/ratingselect';
+  import {formatDate} from '../../common/js/date';
+
+  // const POSITIVE = 0;
+  // const NEGATIVE = 1;
+  const ALL = 2;
 
   export default {
     components: {
       'v-cartcontrol': cartcontrol,
-      'v-split': split
+      'v-split': split,
+      'v-ratingselect': ratingselect
     },
     props: {
       food: {
@@ -64,11 +91,22 @@
     },
     data() {
       return {
-        showFlag: false
+        showFlag: false,
+        selectType: ALL,
+        onlyContent: false,
+        desc: {
+          all: '全部',
+          positive: '推荐',
+          negative: '吐槽'
+        }
       };
     },
+    computed: {},
     methods: {
       show() {
+        // 初始化评论选项
+        this.selectType = ALL;
+        this.onlyContent = false;
         this.showFlag = true;
         this.$nextTick(() => {
           if (!this.scroll) {
@@ -90,12 +128,39 @@
         Vue.set(this.food, 'count', 1);
         // 全局分发一个添加商品的事件
         this.$root.eventHub.$emit('add-cart', event.target);
+      },
+      filterRating(type, text) {
+        if (this.onlyContent && !text) return false;
+        if (this.selectType === ALL) {
+          return true;
+        } else {
+          return this.selectType === type;
+        }
+      },
+      ratingTypeChange(type) {
+        this.selectType = type;
+        this.$nextTick(() => {
+          this.scroll.refresh();
+        });
+      },
+      onlyContentToggle() {
+        this.onlyContent = !this.onlyContent;
+        this.$nextTick(() => {
+          this.scroll.refresh();
+        });
+      }
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return formatDate(date, 'yyyy-MM-dd hh:mm');
       }
     }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/mixin.styl"
   .food-root
     position fixed
     left 0
@@ -192,4 +257,53 @@
         line-height 24px
         font-size 12px
         color rgb(77, 85, 93)
+    .food-rating-wrapper
+      .title
+        padding 18px 0 0 18px
+        line-height 14px
+        margin-bottom 6px
+        font-size 14px
+        font-weight 700
+        color rgb(7, 17, 27)
+    .rating-list
+      padding 0 18px
+      .rating-item
+        position relative
+        padding 16px 0
+        border-1px(rgba(7, 17, 27, 0.1))
+        .user
+          position absolute
+          right 0
+          top 16px
+          line-height 12px
+          font-size 0
+          .name
+            display inline-block
+            margin-right 6px
+            vertical-align top
+            font-size 10px
+            color rgb(147, 153, 159)
+          .avatar
+            border-radius 50%
+        .time
+          line-height 12px
+          font-size 10px
+          color rgb(147, 153, 159)
+        .text
+          margin-top 6px
+          line-height 16px
+          font-size 12px
+          color rgb(7, 17, 27)
+        .icon-thumb_up, .icon-thumb_down
+          margin-right 4px
+          line-height 16px
+          font-size 12px
+        .icon-thumb_up
+          color rgb(0, 160, 220)
+        .icon-thumb_down
+          color rgb(147, 153, 159)
+      .no-ratings
+        padding 16px 0
+        font-size 12px
+        color: rgb(147, 153, 159)
 </style>

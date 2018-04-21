@@ -50,7 +50,7 @@
               <div class="line"></div>
             </div>
             <!--优惠活动-->
-            <ul v-if="seller.supports" class="support">
+            <ul v-if="seller.supports" class="support-wrapper">
               <li class="support-item" v-for="(item,index) in seller.supports" :key="index">
                 <span class="icon" :class="classMap[item.type]"></span>
                 <span class="text">{{item.description}}</span>
@@ -263,7 +263,7 @@
               padding 0 12px
               font-size 14px
               font-weight 700
-          .support
+          .support-wrapper
             width 80%
             margin 0 auto
             .support-item

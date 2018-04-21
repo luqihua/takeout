@@ -82,7 +82,7 @@
     },
     created() {
       this.classMap = ['decrease', 'discount', 'guarantee', 'invoice', 'special'];
-      this.$http.get('/api/goods').then((response) => {
+      this.$http.get('http://120.79.233.108:8080/springbootweb/goods').then((response) => {
         response = response.body;
         if (response.errorNo === ERR_OK) {
           this.goods = response.data;
